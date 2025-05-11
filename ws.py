@@ -13,6 +13,16 @@ class CommunicationHub():
             return match.group(1)
         else:
             return None
+        
+    def extract_receiver(self, message):
+        match = re.search(r'receiver=([^|]*)\|', message)
+        if match:
+            return match.group(1)
+        else:
+            return None
+
+    def find_receiver_socket(self):
+        pass
 
     async def create_socket_server(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -73,6 +83,13 @@ class CommunicationHub():
                     if identity:
                         self.clients[client_socket].update({"identity": identity})
                         print(f"Identity {identity}")
+                    
+                    receiver = self.extract_receiver(decoded_data)
+                    if receiver:
+                        print(f"receiver: {receiver}")
+
+                    ### TODO - filtteröi clienteistä receiver client ja
+                    ### lähetä viesti sille
 
                     print(f"Received data: {decoded_data}")
 

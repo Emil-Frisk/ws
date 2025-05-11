@@ -20,7 +20,7 @@ async def client_task(client_id, client_socket):
     while True:
         try:
             # Send a message
-            message = f"identity=gui|Hello from client {client_id}!\n"
+            message = f"receiver=blackmamba|identity=gui|Hello from client {client_id}!\n"
             await loop.sock_sendall(client_socket, message.encode("utf-8"))
             print(f"Client {client_id} sent: {message}")
 
