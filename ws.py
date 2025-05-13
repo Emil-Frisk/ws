@@ -62,7 +62,7 @@ class CommunicationHub():
             print(f"cleaning up client {self.clients[client_socket]}")
             client_socket.close()
             del self.clients[client_socket]
-
+                    
     def read_data(self):
         pass
 
@@ -82,19 +82,21 @@ class CommunicationHub():
                     identity = self.extract_identity(decoded_data)
                     if identity:
                         self.clients[client_socket].update({"identity": identity})
-                        print(f"Identity {identity}")
                     
                     receiver = self.extract_receiver(decoded_data)
                     if receiver:
                         print(f"receiver: {receiver}")
 
-                    ### TODO - filtteröi clienteistä receiver client ja
-                    ### lähetä viesti sille
-
-                    print(f"Received data: {decoded_data}")
-
                     response = "Message received"
-                    await loop.sock_sendall(client_socket, response.encode("utf-8"))
+                    for client_sock in self.clients.keys():
+                        client_identity = self.clients[client_sock]["identity"]
+                        if client_identity == "1":
+                            await loop.sock_sendall(client_sock, response.encode("utf-8"))
+
+                    # print(f"Received data: {decoded_data}")
+
+                    # response = "Message received"
+                    # await loop.sock_sendall(client_socket, response.encode("utf-8"))
                 else:
                     print(f"Client: {client_address} disconnected")
                     break
