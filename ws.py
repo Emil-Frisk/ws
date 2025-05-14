@@ -7,15 +7,12 @@ class CommunicationHub():
         self.socket_server = None
         self.clients = {}
 
-    def extract_identity(self, message):
-        match = re.search(r'identity=([^|]*)\|', message)
-        if match:
-            return match.group(1)
-        else:
-            return None
-        
-    def extract_receiver(self, message):
-        match = re.search(r'receiver=([^|]*)\|', message)
+    def extract_part(self, part, message):
+        # Escape the part parameter to handle special regex characters
+        escaped_part = re.escape(part)
+        # Construct the regex pattern dynamically
+        pattern = rf'{escaped_part}([^|]*)\|'
+        match = re.search(pattern, message)
         if match:
             return match.group(1)
         else:
@@ -79,19 +76,22 @@ class CommunicationHub():
                     decoded_data = data.decode("utf-8")
 
                     ### get possible identity
-                    identity = self.extract_identity(decoded_data)
+                    identity = self.extract_part("identity=", decoded_data)
                     if identity:
                         self.clients[client_socket].update({"identity": identity})
+                        print(identity)
                     
-                    receiver = self.extract_receiver(decoded_data)
+                    receiver = self.extract_part("receiver=", decoded_data)
                     if receiver:
                         print(f"receiver: {receiver}")
+                    else:
+                        continue
 
                     response = "Message received"
                     for client_sock in self.clients.keys():
                         client_identity = self.clients[client_sock]["identity"]
-                        if client_identity == "1":
-                            await loop.sock_sendall(client_sock, response.encode("utf-8"))
+                        if client_identity == receiver:
+                            await loop.sock_sendall(client_sock, decoded_data.encode("utf-8"))
 
                     # print(f"Received data: {decoded_data}")
 
